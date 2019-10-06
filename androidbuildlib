@@ -1,0 +1,179 @@
+#!/bin/bash
+
+#
+# Build library script for android for specified target of arch
+# this is targeted to be used to build library that has autoconf build system
+# against ndk r19c
+#
+# configurable parameters
+#   out_path          - target installation path to install generated library files for all archs,
+#                       it need to be in relative path from the directory executing this script [default is libs]
+#   host_tag          - host value that will build the library (hint: you can take a look for this value
+#                       at your $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/ [default is linux-x86_64]
+#   minsdkversion     - minimum sdk version to support, this is value of api level [default is 18]
+#   target_abis       - target abis to build for, separated by space [default is "armeabi-v7a x86 arm64-v8a x86_64"]
+#   configure_params  - additional params to pass to ./configure
+#   fresh_build       - whether or not this is a fresh build, user might be using this when repeatitively build the same project over and over i.e. while debugging, so there's no need to keep re-execute './configure' and 'make clean' again. [default is true]
+#
+# By abzi.co (Angry Baozi)
+# Twitter: @haxpor or @abzi_co
+#
+
+# print help text for available parameters that can be used
+print_help()
+{
+  __text="
+Configurable parameters
+   out_path          - target installation path to install generated library files for all archs,
+                       it need to be in relative path from the directory executing this script [default is libs]
+   host_tag          - host value that will build the library (hint: you can take a look for this value
+                       at your \$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/ [default is linux-x86_64]
+   minsdkversion     - minimum sdk version to support, this is value of api level [default is 18]
+   target_abis       - target abis to build for, separated by space [default is \"armeabi-v7a x86 arm64-v8a x86_64\"]
+   configure_params  - additional params to pass to ./configure
+   fresh_build       - whether or not this is a fresh build, user might be using this when repeatitively build the same project over and over i.e. while debugging, so there's no need to keep re-execute './configure' and 'make clean' again. [default is true]
+   no_host           - whether ./configure should be called with the --host option
+"
+  echo "$__text"
+}
+
+# print help
+if [ "$1" == "--help" ]
+then
+  print_help
+  exit
+fi
+
+# check for existence of configure, and Makefile
+if [ ! -e configure ] && { [ ! -e Makefile ] || [ ! -e makefile ]; }
+then
+  echo "Cannot find either configure or Makefile file"
+  exit 1
+fi
+
+out_path=libs
+host_tag=linux-x86_64
+minsdkversion=18
+target_abis="armeabi-v7a x86 arm64-v8a x86_64"
+configure_params=""
+fresh_build=true
+no_host=false
+
+for ARGUMENT in "$@"
+do
+  KEY=$(echo $ARGUMENT | cut -f1 -d=)
+  VALUE=$(echo $ARGUMENT | cut -f2- -d=)
+
+  case "$KEY" in
+    "no_host" ) no_host="${VALUE}" ;;
+    "out_path" ) out_path="${VALUE}" ;;
+    "host_tag" ) host_tag="${VALUE}" ;;
+    "minsdkversion" ) minsdkversion="${VALUE}" ;;
+    "target_abis" ) target_abis="${VALUE}" ;;
+    "configure_params" ) configure_params="${VALUE}" ;;
+    "fresh_build" ) fresh_build="${VALUE}" ;;
+    *)
+      echo ""
+      echo "Unknown '$KEY' parameter"
+      print_help
+      exit 1
+      ;;
+  esac
+done
+
+echo ""
+echo "-Will use following setting-"
+echo "output             = $out_path"
+echo "host_tag           = $host_tag"
+echo "minsdkversion      = $minsdkversion"
+echo "target_abis        = $target_abis"
+echo "configure_params   = $configure_params"
+echo "fresh_build        = $fresh_build"
+echo "no_host            = $no_host"
+echo ""
+
+# check to create installation dir of built library files
+if [ ! -d "$out_path" ]
+then
+  mkdir "$out_path"
+
+  for dir in $target_abis
+  do
+    if [ ! -d "$out_path"/"$dir" ]
+    then
+      mkdir "$out_path"/"$dir"
+    fi
+  done
+fi
+
+export TOOLCHAIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$host_tag
+
+for target in $target_abis
+do
+  if [ $target == "armeabi-v7a" ]
+  then
+    echo "prepare for armeabi-v7a"
+    cc_prefix=armv7a-linux-androideabi$minsdkversion-
+    support_prefix=arm-linux-androideabi-
+    host=armv7a-linux-androideabi
+    install_dir=`pwd`/"$out_path"/armeabi-v7a
+    CFLAGS="${CFLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=softfp -mthumb"
+  elif [ $target == "x86" ]
+  then
+    echo "prepare for x86"
+    cc_prefix=i686-linux-android18-
+    support_prefix=i686-linux-android-
+    host=i686-linux-android
+    install_dir=`pwd`/"$out_path"/x86
+    CFLAGS="${CFLAGS} -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32"
+  elif [ $target == "arm64-v8a" ]
+  then
+    echo "prepare for arm64-v8a"
+    cc_prefix=aarch64-linux-android21-
+    support_prefix=aarch64-linux-android-
+    host=aarch64-linux-android
+    install_dir=`pwd`/"$out_path"/arm64-v8a
+  else
+    echo "prepare for x86_64"
+    cc_prefix=x86_64-linux-android21-
+    support_prefix=x86_64-linux-android-
+    host=x86_64-linux-android
+    install_dir=`pwd`/"$out_path"/x86_64
+    CFLAGS="${CFLAGS} -march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel"
+  fi
+  
+  echo ""
+  echo "cc_prefix           = $cc_prefix"
+  echo "support_prefix      = $support_prefix"
+  echo "host                = $host"
+  echo "install_dir         = $install_dir"
+  echo "CFLAGS              = $CFLAGS"
+  echo ""
+  
+  export AR=$TOOLCHAIN/bin/${support_prefix}ar
+  export AS=$TOOLCHAIN/bin/${support_prefix}as
+  export CC=$TOOLCHAIN/bin/${cc_prefix}clang
+  export CXX=$TOOLCHAIN/bin/${cc_prefix}clang++
+  export LD=$TOOLCHAIN/bin/${support_prefix}ld
+  export RANLIB=$TOOLCHAIN/bin/${support_prefix}ranlib
+  export STRIP=$TOOLCHAIN/bin/${support_prefix}strip
+
+  # only confiture and make clean when there's no flag telling to ignore
+  if [ "$fresh_build" == "true" ]
+  then
+    if [ "$no_host" == "true" ]
+    then 
+      ./configure --prefix="$install_dir" $configure_params || exit
+    else
+      ./configure --host="$host" --prefix="$install_dir" $configure_params || exit
+    fi
+    
+    make clean || exit
+  fi
+  make -j4 || exit
+  make install || exit
+
+  echo "Done building $target"
+done
+
+echo "All done"
