@@ -6,6 +6,7 @@ before_script:
   - export ANDROID_NDK_HOME=`pwd`/android-ndk-r20
   - export NDK=`pwd`/android-ndk-r20
   - export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+  - export SILENT=true
 
 script:
   - ./build_all.sh

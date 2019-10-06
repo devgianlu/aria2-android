@@ -33,6 +33,7 @@ Configurable parameters
    configure_params  - additional params to pass to ./configure
    fresh_build       - whether or not this is a fresh build, user might be using this when repeatitively build the same project over and over i.e. while debugging, so there's no need to keep re-execute './configure' and 'make clean' again. [default is true]
    no_host           - whether ./configure should be called with the --host option
+   silent            - whether the compilation should be less verbose
 "
   echo "$__text"
 }
@@ -58,6 +59,7 @@ target_abis="armeabi-v7a x86 arm64-v8a x86_64"
 configure_params=""
 fresh_build=true
 no_host=false
+silent=false
 
 for ARGUMENT in "$@"
 do
@@ -72,6 +74,7 @@ do
     "target_abis" ) target_abis="${VALUE}" ;;
     "configure_params" ) configure_params="${VALUE}" ;;
     "fresh_build" ) fresh_build="${VALUE}" ;;
+    "silent" ) silent="${VALUE}" ;;
     *)
       echo ""
       echo "Unknown '$KEY' parameter"
@@ -90,6 +93,7 @@ echo "target_abis        = $target_abis"
 echo "configure_params   = $configure_params"
 echo "fresh_build        = $fresh_build"
 echo "no_host            = $no_host"
+echo "silent             = $silent"
 echo ""
 
 # check to create installation dir of built library files
@@ -170,9 +174,15 @@ do
     
     make clean || exit
   fi
-  make -j4 || exit
-  make install || exit
 
+  if [ "$silent" == "true" ]
+  then 
+    make -j4 V=0 || exit
+  else
+    make -j4 V=1 || exit
+  fi
+
+  make install || exit
   echo "Done building $target"
 done
 
