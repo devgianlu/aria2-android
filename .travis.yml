@@ -9,4 +9,4 @@ before_script:
   - export SILENT=true
 
 script:
-  - bash ./build_all.sh
+  - ./build_all.sh

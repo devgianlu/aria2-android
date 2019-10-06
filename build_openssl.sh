@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 VERBOSE_FLAGS=""
 if [ "$SILENT" == "true" ]
