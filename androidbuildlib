@@ -165,6 +165,12 @@ do
   # only confiture and make clean when there's no flag telling to ignore
   if [ "$fresh_build" == "true" ]
   then
+    VERBOSE_FLAGS=""
+    if [ "$silent" == "true" ]
+    then 
+      VERBOSE_FLAGS="-s V=0"
+    fi
+
     if [ "$no_host" == "true" ]
     then 
       ./configure --prefix="$install_dir" $configure_params || exit
@@ -175,13 +181,7 @@ do
     make clean || exit
   fi
 
-  if [ "$silent" == "true" ]
-  then 
-    make -j4 V=0 || exit
-  else
-    make -j4 V=1 || exit
-  fi
-
+  make -j4 $VERBOSE_FLAGS || exit
   make install || exit
   echo "Done building $target"
 done
