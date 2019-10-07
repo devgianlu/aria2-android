@@ -4,6 +4,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install -y autoconf automake autopoint autotools-dev libtool libxml2-dev libcppunit-dev
 
+
 before_script:
   - wget https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
   - unzip -q android-ndk-r20-linux-x86_64.zip
@@ -17,3 +18,24 @@ script:
   - file ./bin/arm64-v8a/bin/aria2c
   - file ./bin/x86/bin/aria2c
   - file ./bin/x86_64/bin/aria2c
+
+
+before_deploy:
+  - mv ./bin/armeabi-v7a/bin/aria2c aria2c-armeabi-v7a
+  - mv ./bin/arm64-v8a/bin/aria2c aria2c-arm64-v8a
+  - mv ./bin/x86/bin/aria2c aria2c-x86
+  - mv ./bin/x86_64/bin/aria2c aria2c-x86_64
+
+deploy:
+  provider: releases
+  draft: true
+  api_key:
+    secure: "3KqVYxMDfQSWeBt5Ci1SCxjrtkhxcZHwC0nXx8LmGoEM0o22fnUTzjgo4PXqo7MJiGldBjfbbJDJ7lNU5pdqPtQvKo6hFOwS3VX8FUfMBvZnWGQIYV9RLzh4ZZ/tS6UtEFUhgO3AintjmRFWLBeE3pWG9OUxUGc3CRXMV54rdWKMyqC5H7CZxup1hnJerGqEhhT1okEOT2E4iOPQdFNWeqHOQ15zI7QT6ljPLkKW57fqpBnf07SH09xL/oohXBy9xTH+bpj6AF3r3m7pmfXtU1HD0MFV/OHzuzA4B0qdiEGAZXLXg1RFIoW062TDqUWPzTBU4LHRjqvqk/WROlD1tEsxGy9/kUhxSerd1xSPhfxtAL0esC1ueJ3MDzBHwdh/liy/k/z+NwV2k2HCvkIhb7V45SMXx1DXtAQPdXYEPjN2PLNTVy5Em4G5iS6XiKOZsClQ8gy00Ei5Tcp+2gBWlAWlCwayxV1Wow2ZyICsJbWlRv34FJHxD2jYbyhcSwBmdTem4lPjB3wBh4XoFqLoZJbnfDblPhOjfZs0cTfTyb25arG7zrhJUGg0NOdUbEBlKP+ivKmxXWaKx8o7oOcLrxM2lUjORocEFyiO+LCKRv3M/JLpGHtaYjdOFM/KuyDroZQGOngPyPLNr69uwql/HcTwpaBxaTISI15PK0nnsfo="
+  file: 
+    - aria2c-armeabi-v7a
+    - aria2c-arm64-v8a
+    - aria2c-x86
+    - aria2c-x86_64
+  skip_cleanup: true
+  on:
+    tags: true
