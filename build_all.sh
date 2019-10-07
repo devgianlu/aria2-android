@@ -4,7 +4,7 @@
 cd c-ares
 echo "----- Build c-ares (`git describe --tags`) -----"
 autoreconf -i
-../androidbuildlib out_path=../libs minsdkversion=21 target_abis="armeabi-v7a x86 arm64-v8a x86_64" silent="$SILENT"
+../androidbuildlib out_path=../libs minsdkversion=21 target_abis="armeabi-v7a x86 arm64-v8a x86_64" silent="$SILENT" configure_params="--disable-shared --enable-static"
 cd ..
 
 
@@ -12,14 +12,14 @@ cd ..
 cd libexpat/expat
 echo "----- Build expat (`git describe --tags`) -----"
 ./buildconf.sh
-../../androidbuildlib out_path=../../libs minsdkversion=21 target_abis="armeabi-v7a x86 arm64-v8a x86_64" silent="$SILENT"
+../../androidbuildlib out_path=../../libs minsdkversion=21 target_abis="armeabi-v7a x86 arm64-v8a x86_64" silent="$SILENT" configure_params="--disable-shared --enable-static"
 cd ../..
 
 
 # Build zlib
 cd zlib
 echo "----- Build zlib (`git describe --tags`) -----"
-../androidbuildlib out_path=../libs minsdkversion=21 target_abis="armeabi-v7a x86 arm64-v8a x86_64" no_host="true" silent="$SILENT"
+../androidbuildlib out_path=../libs minsdkversion=21 target_abis="armeabi-v7a x86 arm64-v8a x86_64" no_host="true" silent="$SILENT" configure_params="--static"
 cd ..
 
 

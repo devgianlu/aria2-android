@@ -125,7 +125,7 @@ do
   elif [ $target == "x86" ]
   then
     echo "prepare for x86"
-    cc_prefix=i686-linux-android18-
+    cc_prefix=i686-linux-android$minsdkversion-
     support_prefix=i686-linux-android-
     host=i686-linux-android
     install_dir=`pwd`/"$out_path"/x86
@@ -133,13 +133,13 @@ do
   elif [ $target == "arm64-v8a" ]
   then
     echo "prepare for arm64-v8a"
-    cc_prefix=aarch64-linux-android21-
+    cc_prefix=aarch64-linux-android$minsdkversion-
     support_prefix=aarch64-linux-android-
     host=aarch64-linux-android
     install_dir=`pwd`/"$out_path"/arm64-v8a
   else
     echo "prepare for x86_64"
-    cc_prefix=x86_64-linux-android21-
+    cc_prefix=x86_64-linux-android$minsdkversion-
     support_prefix=x86_64-linux-android-
     host=x86_64-linux-android
     install_dir=`pwd`/"$out_path"/x86_64
@@ -169,6 +169,7 @@ do
     if [ "$silent" == "true" ]
     then 
       VERBOSE_FLAGS="-s V=0"
+      configure_params="--silent $configure_params"
     fi
 
     if [ "$no_host" == "true" ]
@@ -178,7 +179,7 @@ do
       ./configure --host="$host" --prefix="$install_dir" $configure_params || exit
     fi
     
-    make clean || exit
+    make $VERBOSE_FLAGS clean || exit
   fi
 
   make -j4 $VERBOSE_FLAGS || exit
