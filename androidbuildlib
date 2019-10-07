@@ -60,6 +60,7 @@ configure_params=""
 fresh_build=true
 no_host=false
 silent=false
+custom_silent="--enable-silent-rules"
 
 for ARGUMENT in "$@"
 do
@@ -75,6 +76,7 @@ do
     "configure_params" ) configure_params="${VALUE}" ;;
     "fresh_build" ) fresh_build="${VALUE}" ;;
     "silent" ) silent="${VALUE}" ;;
+    "custom_silent" ) custom_silent="${VALUE}" ;;
     *)
       echo ""
       echo "Unknown '$KEY' parameter"
@@ -94,6 +96,7 @@ echo "configure_params   = $configure_params"
 echo "fresh_build        = $fresh_build"
 echo "no_host            = $no_host"
 echo "silent             = $silent"
+echo "custom_silent      = $custom_silent"
 echo ""
 
 # check to create installation dir of built library files
@@ -169,7 +172,7 @@ do
     if [ "$silent" == "true" ]
     then 
       VERBOSE_FLAGS="-s V=0"
-      configure_params="--silent $configure_params"
+      configure_params="$custom_silent $configure_params"
     fi
 
     if [ "$no_host" == "true" ]
