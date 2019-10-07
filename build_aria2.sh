@@ -6,6 +6,8 @@ INSTALL_DIR=$(pwd)/bin
 mkdir -p $INSTALL_DIR
 
 cd aria2
+echo -e "\n\n----- Build aria2 (`git describe --tags`) -----"
+
 autoreconf -i
 
 
@@ -18,6 +20,7 @@ Configurable parameters
    minsdkversion     - minimum sdk version to support, this is value of api level [default is 18]
    target_abis       - target abis to build for, separated by space [default is \"armeabi-v7a x86 arm64-v8a x86_64\"]
    silent            - whether the compilation should be less verbose
+   strip             - whether the binaries should be stripped [default is true]
 "
   echo "$__text"
 }
@@ -40,6 +43,7 @@ host_tag=linux-x86_64
 minsdkversion=18
 target_abis="armeabi-v7a x86 arm64-v8a x86_64"
 silent=false
+strip=true
 
 for ARGUMENT in "$@"
 do
@@ -51,6 +55,7 @@ do
     "minsdkversion" ) minsdkversion="${VALUE}" ;;
     "target_abis" ) target_abis="${VALUE}" ;;
     "silent" ) silent="${VALUE}" ;;
+    "strip" ) strip="${VALUE}" ;;
     *)
       echo ""
       echo "Unknown '$KEY' parameter"
@@ -123,8 +128,7 @@ do
 
   configure_params=""
   make_params=""
-  if [ "$silent" == "true" ]
-  then 
+  if [ "$silent" == "true" ]; then 
     make_params="-s V=0"
     configure_params="--silent"
   fi
@@ -155,6 +159,11 @@ do
   make $make_params clean || exit
   make -j4 $make_params || exit
   make install || exit
+
+  if [ "$strip" == "true" ]; then
+    $STRIP $install_dir/bin/aria2c
+  fi
+
   echo "Done building $target"
 done
 
