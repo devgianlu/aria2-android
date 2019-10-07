@@ -1,11 +1,5 @@
 #!/bin/bash -e
 
-# Check ANDROID_HOME env
-if [ -z "$ANDROID_HOME" ]; then
-    echo 'No $ANDROID_HOME specified.'
-    exit 1
-fi
-
 # Check NDK and ANDROID_NDK_HOME env
 if [ -z "$NDK" ]; then
 	if [ -z "$ANDROID_NDK_HOME" ]; then
