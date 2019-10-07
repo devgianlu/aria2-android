@@ -1,5 +1,9 @@
 language: generic
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y autoconf automake autopoint autotools-dev libtool libxml2-dev libcppunit-dev
+
 before_script:
   - wget https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
   - unzip -q android-ndk-r20-linux-x86_64.zip
