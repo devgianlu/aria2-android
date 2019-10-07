@@ -15,5 +15,5 @@ script:
   - ./build_all.sh
   - file ./bin/armeabi-v7a/bin/aria2c
   - file ./bin/arm64-v8a/bin/aria2c
-  - file ./bin/armeabi-x86/bin/aria2c
-  - file ./bin/armeabi-x86_64/bin/aria2c
+  - file ./bin/x86/bin/aria2c
+  - file ./bin/x86_64/bin/aria2c
