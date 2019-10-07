@@ -1,20 +1,23 @@
 #!/bin/bash -e
 
+
+LIBS_DIR=$(pwd)/libs
+INSTALL_DIR=$(pwd)/bin
+mkdir -p $INSTALL_DIR
+
+cd aria2
+autoreconf -i
+
+
 print_help()
 {
   __text="
 Configurable parameters
-   out_path          - target installation path to install generated library files for all archs,
-                       it need to be in relative path from the directory executing this script [default is libs]
    host_tag          - host value that will build the library (hint: you can take a look for this value
                        at your \$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/ [default is linux-x86_64]
    minsdkversion     - minimum sdk version to support, this is value of api level [default is 18]
    target_abis       - target abis to build for, separated by space [default is \"armeabi-v7a x86 arm64-v8a x86_64\"]
-   configure_params  - additional params to pass to ./configure
-   fresh_build       - whether or not this is a fresh build, user might be using this when repeatitively build the same project over and over i.e. while debugging, so there's no need to keep re-execute './configure' and 'make clean' again. [default is true]
-   no_host           - whether ./configure should be called with the --host option [default is false]
-   silent            - whether the compilation should be less verbose [default is false]
-   custom_silent     - custom silent flag/option [default is \"--enable-silent-rules\"]
+   silent            - whether the compilation should be less verbose
 "
   echo "$__text"
 }
@@ -33,15 +36,10 @@ then
   exit 1
 fi
 
-out_path=libs
 host_tag=linux-x86_64
 minsdkversion=18
 target_abis="armeabi-v7a x86 arm64-v8a x86_64"
-configure_params=""
-fresh_build=true
-no_host=false
 silent=false
-custom_silent="--enable-silent-rules"
 
 for ARGUMENT in "$@"
 do
@@ -49,15 +47,10 @@ do
   VALUE=$(echo $ARGUMENT | cut -f2- -d=)
 
   case "$KEY" in
-    "no_host" ) no_host="${VALUE}" ;;
-    "out_path" ) out_path="${VALUE}" ;;
     "host_tag" ) host_tag="${VALUE}" ;;
     "minsdkversion" ) minsdkversion="${VALUE}" ;;
     "target_abis" ) target_abis="${VALUE}" ;;
-    "configure_params" ) configure_params="${VALUE}" ;;
-    "fresh_build" ) fresh_build="${VALUE}" ;;
     "silent" ) silent="${VALUE}" ;;
-    "custom_silent" ) custom_silent="${VALUE}" ;;
     *)
       echo ""
       echo "Unknown '$KEY' parameter"
@@ -69,32 +62,14 @@ done
 
 echo ""
 echo "-Will use following setting-"
-echo "output             = $out_path"
 echo "host_tag           = $host_tag"
 echo "minsdkversion      = $minsdkversion"
 echo "target_abis        = $target_abis"
-echo "configure_params   = $configure_params"
-echo "fresh_build        = $fresh_build"
-echo "no_host            = $no_host"
 echo "silent             = $silent"
-echo "custom_silent      = $custom_silent"
 echo ""
 
-# check to create installation dir of built library files
-if [ ! -d "$out_path" ]
-then
-  mkdir "$out_path"
-
-  for dir in $target_abis
-  do
-    if [ ! -d "$out_path"/"$dir" ]
-    then
-      mkdir "$out_path"/"$dir"
-    fi
-  done
-fi
-
 export TOOLCHAIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$host_tag
+
 
 for target in $target_abis
 do
@@ -104,7 +79,7 @@ do
     cc_prefix=armv7a-linux-androideabi$minsdkversion-
     support_prefix=arm-linux-androideabi-
     host=armv7a-linux-androideabi
-    install_dir=`pwd`/"$out_path"/armeabi-v7a
+    install_dir=$INSTALL_DIR/armeabi-v7a
     CFLAGS="${CFLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=softfp -mthumb"
   elif [ $target == "x86" ]
   then
@@ -112,7 +87,7 @@ do
     cc_prefix=i686-linux-android$minsdkversion-
     support_prefix=i686-linux-android-
     host=i686-linux-android
-    install_dir=`pwd`/"$out_path"/x86
+    install_dir=$INSTALL_DIR/x86
     CFLAGS="${CFLAGS} -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32"
   elif [ $target == "arm64-v8a" ]
   then
@@ -120,13 +95,13 @@ do
     cc_prefix=aarch64-linux-android$minsdkversion-
     support_prefix=aarch64-linux-android-
     host=aarch64-linux-android
-    install_dir=`pwd`/"$out_path"/arm64-v8a
+    install_dir=$INSTALL_DIR/arm64-v8a
   else
     echo "prepare for x86_64"
     cc_prefix=x86_64-linux-android$minsdkversion-
     support_prefix=x86_64-linux-android-
     host=x86_64-linux-android
-    install_dir=`pwd`/"$out_path"/x86_64
+    install_dir=$INSTALL_DIR/x86_64
     CFLAGS="${CFLAGS} -march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel"
   fi
   
@@ -146,27 +121,39 @@ do
   export RANLIB=$TOOLCHAIN/bin/${support_prefix}ranlib
   export STRIP=$TOOLCHAIN/bin/${support_prefix}strip
 
-  # only confiture and make clean when there's no flag telling to ignore
-  if [ "$fresh_build" == "true" ]
-  then
-    VERBOSE_FLAGS=""
-    if [ "$silent" == "true" ]
-    then 
-      VERBOSE_FLAGS="-s V=0"
-      configure_params="$custom_silent $configure_params"
-    fi
-
-    if [ "$no_host" == "true" ]
-    then 
-      ./configure --prefix="$install_dir" $configure_params || exit
-    else
-      ./configure --host="$host" --prefix="$install_dir" $configure_params || exit
-    fi
-    
-    make $VERBOSE_FLAGS clean || exit
+  configure_params=""
+  make_params=""
+  if [ "$silent" == "true" ]
+  then 
+    make_params="-s V=0"
+    configure_params="--silent"
   fi
 
-  make -j4 $VERBOSE_FLAGS || exit
+  LIBS_TARGET_DIR=$LIBS_DIR/$target
+
+  ./configure \
+    --host="$host" \
+    --build=`dpkg-architecture -qDEB_BUILD_GNU_TYPE` \
+    --prefix="$install_dir" \
+    --disable-nls \
+    --without-gnutls \
+    --with-openssl \
+    --without-sqlite3 \
+    --without-libxml2 \
+    --with-libexpat \
+    --with-libcares \
+    --with-libz \
+    --with-libssh2 \
+    $configure_params \
+    CXXFLAGS="-Os -g" \
+    CFLAGS="-Os -g" \
+    CPPFLAGS="-fPIE" \
+    LDFLAGS="-fPIE -pie -L$LIBS_TARGET_DIR/lib -static-libstdc++" \
+    PKG_CONFIG_LIBDIR="$LIBS_TARGET_DIR/lib/pkgconfig" || exit
+
+    
+  make $make_params clean || exit
+  make -j4 $make_params || exit
   make install || exit
   echo "Done building $target"
 done

@@ -15,6 +15,7 @@ fi
 
 # Clean
 rm -rf libs
+rm -rf bin
 
 
 # Build c-ares
@@ -56,3 +57,9 @@ cd ..
 
 # Build libssh2
 ./build_libssh2.sh "$(pwd)/libs"
+
+
+# Build aria2
+./build_aria2.sh minsdkversion=21 \
+	target_abis="armeabi-v7a x86 arm64-v8a x86_64" \
+	silent="$SILENT"
