@@ -153,7 +153,7 @@ do
 
     
   make $make_params clean || exit
-  make -j4 $make_params || exit
+  make -j `nproc` $make_params || exit
   make install || exit
   echo "Done building $target"
 done
