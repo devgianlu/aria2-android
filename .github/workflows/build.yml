@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: false
+          submodules: true
       - name: Setup NDK
         run: |
           sudo apt-get update
