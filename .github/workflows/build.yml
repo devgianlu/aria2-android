@@ -1,0 +1,28 @@
+name: Build aria2
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup NDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake autopoint autotools-dev libtool libxml2-dev libcppunit-dev
+          wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
+          unzip -q android-ndk-r23b-linux.zip
+          export ANDROID_NDK_HOME=`pwd`/android-ndk-r23b
+          export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+          export SILENT=true
+      - name: Build
+        run: |
+          ./build_all.sh
+          file ./bin/armeabi-v7a/bin/aria2c
+          file ./bin/arm64-v8a/bin/aria2c
+          file ./bin/x86/bin/aria2c
+          file ./bin/x86_64/bin/aria2c
