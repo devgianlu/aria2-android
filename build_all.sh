@@ -22,7 +22,7 @@ rm -rf bin
 cd c-ares
 echo "----- Build c-ares (`git describe --tags`) -----"
 autoreconf -i
-../androidbuildlib out_path=../libs minsdkversion=21 \
+../androidbuildlib out_path=../libs minsdkversion=24 \
 	target_abis="armeabi-v7a x86 arm64-v8a x86_64" \
 	silent="$SILENT" custom_silent="--silent" \
 	configure_params="--disable-shared --enable-static"
@@ -33,7 +33,7 @@ cd ..
 cd libexpat/expat
 echo -e "\n\n----- Build expat (`git describe --tags`) -----"
 ./buildconf.sh
-../../androidbuildlib out_path=../../libs minsdkversion=21 \
+../../androidbuildlib out_path=../../libs minsdkversion=24 \
 	target_abis="armeabi-v7a x86 arm64-v8a x86_64" \
 	silent="$SILENT" \
 	configure_params="--disable-shared --enable-static"
@@ -43,7 +43,7 @@ cd ../..
 # Build zlib
 cd zlib
 echo -e "\n\n----- Build zlib (`git describe --tags`) -----"
-../androidbuildlib out_path=../libs minsdkversion=21 \
+../androidbuildlib out_path=../libs minsdkversion=24 \
 	target_abis="armeabi-v7a x86 arm64-v8a x86_64" \
 	no_host="true" \
 	silent="$SILENT" custom_silent="" \
@@ -51,7 +51,7 @@ echo -e "\n\n----- Build zlib (`git describe --tags`) -----"
 cd ..
 
 
-# Build openssl 
+# Build openssl
 ./build_openssl.sh "$(pwd)/libs"
 
 
@@ -60,6 +60,6 @@ cd ..
 
 
 # Build aria2
-./build_aria2.sh minsdkversion=21 \
+./build_aria2.sh minsdkversion=24 \
 	target_abis="armeabi-v7a x86 arm64-v8a x86_64" \
 	silent="$SILENT"

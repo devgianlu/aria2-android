@@ -138,13 +138,13 @@ do
   echo "CFLAGS              = $CFLAGS"
   echo ""
   
-  export AR=$TOOLCHAIN/bin/${support_prefix}ar
-  export AS=$TOOLCHAIN/bin/${support_prefix}as
+  export AR=$TOOLCHAIN/bin/llvm-ar
   export CC=$TOOLCHAIN/bin/${cc_prefix}clang
+  export AS=$CC
   export CXX=$TOOLCHAIN/bin/${cc_prefix}clang++
-  export LD=$TOOLCHAIN/bin/${support_prefix}ld
-  export RANLIB=$TOOLCHAIN/bin/${support_prefix}ranlib
-  export STRIP=$TOOLCHAIN/bin/${support_prefix}strip
+  export LD=$TOOLCHAIN/bin/ld
+  export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+  export STRIP=$TOOLCHAIN/bin/llvm-strip
 
   # only confiture and make clean when there's no flag telling to ignore
   if [ "$fresh_build" == "true" ]

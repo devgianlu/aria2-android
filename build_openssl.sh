@@ -2,6 +2,7 @@
 
 cd openssl
 INSTALL_DIR="$1"
+ANDROID_NDK_ROOT="$NDK"
 PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
 echo -e "\n\n----- Build openssl (`git describe --tags`) -----"
 
