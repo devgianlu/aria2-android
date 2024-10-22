@@ -5,6 +5,7 @@ echo -e "\n\n----- Build libssh2 (`git describe --tags`) -----"
 ./buildconf
 
 INSTALL_DIR="$1"
+export LDFLAGS="$LDFLAGS -latomic"
 
 echo -e "\n++ Build libssh2 armeabi-v7a ++"
 ../androidbuildlib out_path=../libs \

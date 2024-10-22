@@ -36,7 +36,12 @@ then
   exit 1
 fi
 
-host_tag=linux-x86_64
+# check system is linux or darwin
+if [ "$(uname)" == "Darwin" ]; then
+    host_tag=darwin-x86_64
+else
+    host_tag=linux-x86_64
+fi
 minsdkversion=18
 target_abis="armeabi-v7a x86 arm64-v8a x86_64"
 silent=false
